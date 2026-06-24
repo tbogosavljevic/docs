@@ -1,40 +1,29 @@
 version: v1.0
-name: Docs
+name: "\U0001F3AF Simple CI Pipeline"
 agent:
   machine:
-    type: e1-standard-2
-    os_image: ubuntu2004
+    type: e2-standard-2
+    os_image: ubuntu2404
+fail_fast:
+  stop:
+    when: branch != 'main'
+auto_cancel:
+  running:
+    when: branch != 'main'
+  queued:
+    when: branch = 'main'
 blocks:
-  - name: Make & push
+  - name: long
+    dependencies: []
     task:
-      prologue:
-        commands:
-          - checkout
-
       jobs:
-        - name: Lint
+        - name: long
           commands:
-            - npm install markdownlint-cli2 markdownlint-cli2-formatter-junit --global
-            # Don't fail even if markdown linter detects issues
-            - markdownlint-cli2 "**/*.md" "#node_modules" || echo
-
-        - name: Mkdocs & Nginx
+            - sleep 1200
+  - name: short
+    dependencies: []
+    task:
+      jobs:
+        - name: short
           commands:
-            - make configure.gcloud
-            - make mkdocs.build
-            - make nginx.build
-            - make nginx.test
-            - make nginx.push
-
-      epilogue:
-        always:
-          commands:
-            - '[[ -f junit.xml ]] && test-results publish junit.xml'
-      secrets:
-        - name: container-registry-writer
-
-promotions:
-  - name: Production
-    pipeline_file: prod.yml
-    auto_promote:
-      when: "result = 'passed' and branch = 'master'"
+            - sleep 1
